@@ -1,0 +1,12 @@
+{
+    "domain": "freebox_player_remote",
+    "name": "Freebox Player Remote",
+    "version": "1.0.0",
+    "config_flow": true,
+    "integration_type": "device",
+    "iot_class": "assumed_state",
+    "dependencies": ["zeroconf"],
+    "codeowners": ["Marchat9"],
+    "requirements": [],
+    "description": "Pilote la télécommande complète d'un Freebox Player (Revolution/Delta/Crystal/mini4K) via le protocole réseau Foils HID de Free : navigation, power, couleurs, pavé numérique et lecture, sans passer par l'API HTTP bridée par Free."
+}
