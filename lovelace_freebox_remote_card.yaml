@@ -1,0 +1,466 @@
+# Lovelace card to control the Freebox Player via freebox_player_remote.press
+# Paste into an HA dashboard: "Edit Dashboard" > "+ Add Card" > scroll to the
+# bottom > "Manual" > paste this YAML (a single "vertical-stack" card).
+#
+# Requires the HACS module "card-mod" (https://github.com/thomasloven/lovelace-card-mod)
+# to be installed and added as a Lovelace resource: the Back/Search/Menu/Info and
+# Free buttons use the "card_mod" key for their colored background and custom
+# typography. Without card-mod, those buttons still work (tap_action still fires
+# the service) but keep the theme's default styling, with no background color or
+# custom font.
+
+type: vertical-stack
+cards:
+    - type: markdown
+      content: '## 📺 Freebox Player'
+
+    # Power / Veille / Reveil
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+          - type: button
+            name: Power
+            icon: mdi:power
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Power },
+                }
+          - type: button
+            name: Veille
+            icon: mdi:sleep
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'System Sleep' },
+                }
+          - type: button
+            name: Reveil
+            icon: mdi:sleep-off
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'System Wakeup' },
+                }
+
+    - type: markdown
+      content: '### Navigation'
+
+    # Pave directionnel + OK + Menu (grille 3x3 fusionnee)
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+          - type: button
+            name: Retour
+            icon: mdi:undo-variant
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Back },
+                }
+            card_mod:
+                style: |
+                    ha-card {
+                      background-color: #d0342c;
+                      color: white;
+                      --paper-item-icon-color: white;
+                      --icon-primary-color: white;
+                    }
+                    ha-state-icon, ha-icon, state-badge {
+                      color: white !important;
+                    }
+          - type: button
+            name: Haut
+            icon: mdi:chevron-up
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Up },
+                }
+          - type: button
+            name: Recherche
+            icon: mdi:magnify
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Search },
+                }
+            card_mod:
+                style: |
+                    ha-card {
+                      background-color: #1971c2;
+                      color: white;
+                      --paper-item-icon-color: white;
+                      --icon-primary-color: white;
+                    }
+                    ha-state-icon, ha-icon, state-badge {
+                      color: white !important;
+                    }
+
+          - type: button
+            name: Gauche
+            icon: mdi:chevron-left
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Left },
+                }
+          - type: button
+            name: OK
+            icon: mdi:checkbox-blank-circle-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Enter },
+                }
+          - type: button
+            name: Droite
+            icon: mdi:chevron-right
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Right },
+                }
+
+          - type: button
+            name: Menu
+            icon: mdi:menu
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Menu },
+                }
+            card_mod:
+                style: |
+                    ha-card {
+                      background-color: #2f9e44;
+                      color: white;
+                      --paper-item-icon-color: white;
+                      --icon-primary-color: white;
+                    }
+                    ha-state-icon, ha-icon, state-badge {
+                      color: white !important;
+                    }
+          - type: button
+            name: Bas
+            icon: mdi:chevron-down
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Down },
+                }
+          - type: button
+            name: Info
+            icon: mdi:information-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Info },
+                }
+            card_mod:
+                style: |
+                    ha-card {
+                      background-color: #f2b705;
+                      color: white;
+                      --paper-item-icon-color: white;
+                      --icon-primary-color: white;
+                    }
+                    ha-state-icon, ha-icon, state-badge {
+                      color: white !important;
+                    }
+
+    - type: button
+      name: Free
+      tap_action:
+          {
+              action: perform-action,
+              perform_action: freebox_player_remote.press,
+              data: { key: Free },
+          }
+      card_mod:
+          style: |
+              ha-card {
+                color: #d0342c;
+              }
+              .name, .text, .info, ha-card span {
+                font-style: italic !important;
+                font-weight: bold !important;
+                font-size: 22px !important;
+                color: #d0342c !important;
+              }
+
+    - type: markdown
+      content: '### Volume / Chaine'
+
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+          - type: button
+            name: Vol +
+            icon: mdi:volume-plus
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Vol+' },
+                }
+          - type: button
+            name: Mute
+            icon: mdi:volume-mute
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Mute },
+                }
+          - type: button
+            name: Chaine +
+            icon: mdi:arrow-up-bold-box-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Chan+' },
+                }
+          - type: button
+            name: Vol -
+            icon: mdi:volume-minus
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Vol-' },
+                }
+          - type: markdown
+            content: ' '
+          - type: button
+            name: Chaine -
+            icon: mdi:arrow-down-bold-box-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Chan-' },
+                }
+
+    - type: markdown
+      content: '### Pave numerique'
+
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+          - type: button
+            name: '1'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '1' },
+                }
+          - type: button
+            name: '2'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '2' },
+                }
+          - type: button
+            name: '3'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '3' },
+                }
+          - type: button
+            name: '4'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '4' },
+                }
+          - type: button
+            name: '5'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '5' },
+                }
+          - type: button
+            name: '6'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '6' },
+                }
+          - type: button
+            name: '7'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '7' },
+                }
+          - type: button
+            name: '8'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '8' },
+                }
+          - type: button
+            name: '9'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '9' },
+                }
+          - type: markdown
+            content: ' '
+          - type: button
+            name: '0'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: '0' },
+                }
+          - type: button
+            name: '⌫'
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Backspace },
+                }
+
+    - type: markdown
+      content: '### Lecture'
+
+    - type: grid
+      columns: 4
+      square: false
+      cards:
+          - type: button
+            name: Precedent
+            icon: mdi:skip-previous
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Previous track' },
+                }
+          - type: button
+            name: Rewind
+            icon: mdi:rewind
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Rewind },
+                }
+          - type: button
+            name: Avance
+            icon: mdi:fast-forward
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Fast Forward' },
+                }
+          - type: button
+            name: Suivant
+            icon: mdi:skip-next
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Next track' },
+                }
+          - type: button
+            name: Lecture
+            icon: mdi:play
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Play },
+                }
+          - type: button
+            name: Pause
+            icon: mdi:pause
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Pause },
+                }
+          - type: button
+            name: Stop
+            icon: mdi:stop
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Stop },
+                }
+          - type: button
+            name: Aleatoire
+            icon: mdi:shuffle
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Random Play' },
+                }
+          - type: button
+            name: Enregistrer
+            icon: mdi:record-rec
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Record },
+                }
+          - type: button
+            name: Ejecter
+            icon: mdi:eject
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Eject },
+                }
+          - type: button
+            name: Tab
+            icon: mdi:keyboard-tab
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: Tab },
+                }
+          - type: markdown
+            content: ' '

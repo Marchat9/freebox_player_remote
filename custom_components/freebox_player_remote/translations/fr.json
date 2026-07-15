@@ -1,0 +1,46 @@
+{
+  "title": "Télécommande Freebox Player (HID)",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connexion à votre Freebox Player",
+        "description": "Cette intégration pilote entièrement un Freebox Player (Revolution/Delta/Crystal/mini4K) par le réseau, via le protocole Foils HID de Free -- le même que celui utilisé par l'application Android officielle de télécommande. Contrairement à l'API de télécommande HTTP (bloquée par Free), elle couvre aussi la navigation, le power, les couleurs, le pavé numérique et le changement de chaîne.\n\n![Disposition de la télécommande Freebox Player Revolution](/freebox_player_remote/logo.png)\n\nVous trouverez l'adresse IP du Player dans l'interface Freebox OS (mafreebox.freebox.fr), rubrique Réglages > Freebox Player, ou dans la liste des clients DHCP de votre Freebox Server. **Il est fortement recommandé de fixer l'IP du Player via une réservation DHCP** sur la Freebox : sans cela, l'intégration cessera de fonctionner le jour où le Player recevra une nouvelle adresse.",
+        "data": {
+          "host": "Adresse IP du Player",
+          "port": "Port (optionnel)"
+        },
+        "data_description": {
+          "host": "Adresse IPv4 du Freebox Player sur votre réseau local, par exemple 192.168.1.10.",
+          "port": "Laissez vide pour laisser Home Assistant découvrir automatiquement le port Foils HID par mDNS. Ne renseignez ce champ que si la découverte automatique échoue ; vous pouvez trouver ce port avec un outil comme 'avahi-browse -r _hid._udp' sur votre réseau."
+        }
+      }
+    },
+    "error": {
+      "invalid_host": "Ce n'est pas une adresse IPv4 valide (exemple : 192.168.1.10).",
+      "cannot_connect": "L'hôte est injoignable (réseau inaccessible / pas de route vers cet hôte). Vérifiez l'adresse IP et que le Player est bien sur le même réseau que Home Assistant.",
+      "connection_refused": "La connexion a été activement refusée par l'hôte. Vérifiez le port, et que la fonction de télécommande réseau du Player est bien activée.",
+      "timeout_connect": "Aucune réponse du Freebox Player dans le délai imparti. Vérifiez qu'il est allumé et que l'IP/le port sont corrects.",
+      "discovery_failed": "Aucun port n'a été renseigné et la découverte automatique (mDNS) n'a pas trouvé le service Foils HID. Indiquez le port manuellement.",
+      "unknown": "Erreur inattendue lors du test de connexion. Consultez les journaux (logs) de Home Assistant pour plus de détails."
+    },
+    "abort": {
+      "already_configured": "Ce Freebox Player est déjà configuré."
+    }
+  },
+  "services": {
+    "press": {
+      "name": "Appuyer sur une touche de la télécommande",
+      "description": "Envoie un appui de touche (appui + relâchement) à un Freebox Player via le protocole réseau Foils HID.",
+      "fields": {
+        "key": {
+          "name": "Touche",
+          "description": "Nom de la touche de télécommande à envoyer, correspondant aux boutons de la télécommande physique du Freebox Player Revolution."
+        },
+        "entry_id": {
+          "name": "Identifiant de configuration",
+          "description": "Utile uniquement si plusieurs Freebox Player HID sont configurés."
+        }
+      }
+    }
+  }
+}

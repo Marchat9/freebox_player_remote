@@ -1,0 +1,69 @@
+press:
+  name: Press remote key
+  description: >-
+    Sends a single remote-control key press (press + release) to a Freebox
+    Player over the Foils HID network protocol. Works even for keys blocked
+    by Free on the HTTP remote-control API (navigation, power, colors,
+    numeric keypad...).
+  fields:
+    key:
+      name: Key
+      description: >-
+        Name of the remote control key to send, matching the buttons on the
+        physical Freebox Player Revolution remote.
+      required: true
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - Power
+            - AV
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+            - "9"
+            - Up
+            - Down
+            - Left
+            - Right
+            - Enter
+            - Back
+            - Search
+            - Menu
+            - Info
+            - Free
+            - Vol-
+            - Vol+
+            - Mute
+            - Record
+            - Chan+
+            - Chan-
+            - Rewind
+            - Play/Pause
+            - Fast Forward
+            - Backspace
+            - Stop
+            - Play
+            - Pause
+            - Random Play
+            - Previous track
+            - Next track
+            - Eject
+            - Tab
+            - Context Menu
+            - System Sleep
+            - System Wakeup
+    entry_id:
+      name: Config entry ID
+      description: >-
+        Only needed if more than one Freebox Player HID device is configured;
+        selects which one receives the key press.
+      required: false
+      selector:
+        text:
