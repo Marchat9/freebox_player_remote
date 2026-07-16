@@ -18,7 +18,7 @@ from .client import (
     ConnectionRefused,
     ConnectionTimeout,
     InvalidHost,
-    async_discover_port,
+    async_discover_device,
     test_connection,
 )
 from .const import DOMAIN
@@ -27,10 +27,14 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_HOST): str,
+        vol.Optional(CONF_HOST): str,
         vol.Optional(CONF_PORT): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
     }
 )
+
+# The confirm_* steps have no fields of their own -- they just recap what
+# was found/entered and let the user submit to actually create the entry.
+_CONFIRM_SCHEMA = vol.Schema({})
 
 # Maps client.py's own exception hierarchy directly to config-flow error
 # codes (see strings.json/translations). No local exception hierarchy is
@@ -45,29 +49,39 @@ _ERROR_CODES: dict[type[Exception], str] = {
 
 
 class DiscoveryFailed(HomeAssistantError):
-    """No port was provided and mDNS discovery did not find one."""
+    """No host/port was provided and mDNS discovery did not find one."""
 
 
-async def _validate_and_connect(hass: HomeAssistant, host: str, port: int | None) -> int:
-    """Validate the host, resolve the port and attempt a real RUDP handshake.
+async def _validate_and_connect(
+    hass: HomeAssistant, host: str | None, port: int | None
+) -> tuple[str, int]:
+    """Resolve the host/port (via mDNS if needed) and attempt a real RUDP handshake.
 
-    Returns the port to store in the config entry. Raises a client.py
-    exception (mapped via _ERROR_CODES) or DiscoveryFailed on failure --
-    never a generic catch-all, so the UI can show a message specific to
-    what actually went wrong.
+    Returns the (host, port) pair to store in the config entry. Raises a
+    client.py exception (mapped via _ERROR_CODES) or DiscoveryFailed on
+    failure -- never a generic catch-all, so the UI can show a message
+    specific to what actually went wrong.
     """
-    try:
-        ipaddress.IPv4Address(host)
-    except ValueError as err:
-        raise InvalidHost(str(err)) from err
-
-    if port is None:
-        port = await async_discover_port(hass, host)
-        if port is None:
+    if host is None:
+        # Both fields left empty: find any Foils HID device on the network.
+        device = await async_discover_device(hass)
+        if device is None:
             raise DiscoveryFailed
+        host, port = device
+    else:
+        try:
+            ipaddress.IPv4Address(host)
+        except ValueError as err:
+            raise InvalidHost(str(err)) from err
+
+        if port is None:
+            device = await async_discover_device(hass, host)
+            if device is None:
+                raise DiscoveryFailed
+            _, port = device
 
     await hass.async_add_executor_job(test_connection, host, port)
-    return port
+    return host, port
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -75,16 +89,22 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        # Filled in by async_step_user once the connection test succeeds;
+        # read back by the confirm_* steps to actually create the entry.
+        self._resolved_host: str | None = None
+        self._resolved_port: int | None = None
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """First (and only) step: ask for host/port and test the connection."""
+        """First step: ask for host/port and test the connection."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            host = user_input[CONF_HOST]
+            host = user_input.get(CONF_HOST)
             port = user_input.get(CONF_PORT)
 
             try:
-                resolved_port = await _validate_and_connect(self.hass, host, port)
+                resolved_host, resolved_port = await _validate_and_connect(self.hass, host, port)
             except DiscoveryFailed:
                 errors["base"] = "discovery_failed"
             except tuple(_ERROR_CODES) as err:
@@ -97,15 +117,55 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(host)
+                # Catch already-configured Freeboxes here, before the confirm
+                # screen -- no point recapping a connection we're about to abort.
+                await self.async_set_unique_id(resolved_host)
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=f"Freebox Player ({host})",
-                    data={CONF_HOST: host, CONF_PORT: resolved_port},
-                )
+
+                self._resolved_host = resolved_host
+                self._resolved_port = resolved_port
+
+                if host is None:
+                    return await self.async_step_confirm_auto()
+                if port is None:
+                    return await self.async_step_confirm_port_auto()
+                return await self.async_step_confirm_manual()
 
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
         )
+
+    async def _async_confirm(self, step_id: str, user_input: dict[str, Any] | None) -> FlowResult:
+        """Shared recap screen: create the entry once the user submits it."""
+        if user_input is not None:
+            return self.async_create_entry(
+                title=f"Freebox Player ({self._resolved_host}:{self._resolved_port})",
+                data={CONF_HOST: self._resolved_host, CONF_PORT: self._resolved_port},
+            )
+
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=_CONFIRM_SCHEMA,
+            description_placeholders={
+                "host": self._resolved_host,
+                "port": str(self._resolved_port),
+            },
+        )
+
+    async def async_step_confirm_auto(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Recap step: both host and port were found automatically via mDNS."""
+        return await self._async_confirm("confirm_auto", user_input)
+
+    async def async_step_confirm_port_auto(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Recap step: host was given, port was found automatically via mDNS."""
+        return await self._async_confirm("confirm_port_auto", user_input)
+
+    async def async_step_confirm_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Recap step: both host and port were entered manually."""
+        return await self._async_confirm("confirm_manual", user_input)

@@ -425,12 +425,20 @@ def test_connection(host: str, port: int, timeout: float = 7.0) -> None:
         client.disconnect()
 
 
-async def async_discover_port(hass, host: str, timeout: float = 8.0) -> int | None:
-    """Best-effort mDNS discovery of the Foils HID port.
+async def async_discover_device(
+    hass, host: str | None = None, timeout: float = 8.0
+) -> tuple[str, int] | None:
+    """Best-effort mDNS discovery of a Freebox Player's Foils HID host/port.
+
+    If `host` is given, only that address is considered and its advertised
+    port is returned -- used when the user filled in the IP but left the port
+    empty. If `host` is None, the first Foils HID service found on the
+    network is used, returning both its IP and port -- used for fully
+    automatic setup when the user leaves both fields empty.
 
     This is not part of the confirmed protocol spec (the port itself is not
     fixed, only the service type is documented). If this fails for any reason
-    we simply return None so the user can fall back to entering the port
+    we simply return None so the user can fall back to entering the host/port
     manually -- never raise from here.
     """
     try:
@@ -443,22 +451,34 @@ async def async_discover_port(hass, host: str, timeout: float = 8.0) -> int | No
 
     aiozc = await ha_zeroconf.async_get_async_instance(hass)
     found = asyncio.Event()
-    result: dict[str, int] = {}
+    result: dict[str, tuple[str, int]] = {}
 
     async def _resolve(zc, service_type: str, name: str) -> None:
         info = AsyncServiceInfo(service_type, name)
-        if await info.async_request(zc, 3000):
-            addresses = info.parsed_addresses()
-            if host in addresses and info.port:
-                result["port"] = info.port
+        if not await info.async_request(zc, 3000):
+            return
+        addresses = info.parsed_addresses()
+        if not info.port or not addresses:
+            return
+        if host is not None:
+            if host in addresses:
+                result["device"] = (host, info.port)
                 found.set()
+        else:
+            result["device"] = (addresses[0], info.port)
+            found.set()
 
     def _on_change(
-        zc,
+        zeroconf,
         service_type: str,
         name: str,
         state_change: "ServiceStateChange",
     ) -> None:
+        # AsyncServiceBrowser calls its handlers with keyword arguments
+        # matching this exact parameter list (zeroconf/service_type/name/
+        # state_change) -- a differently-named first parameter (e.g. `zc`)
+        # raises "got an unexpected keyword argument 'zeroconf'".
+        #
         # Home Assistant's shared Zeroconf instance is typically already
         # running and may have this service cached from before our browser
         # attached -- in that case the first event we see is "Updated", not
@@ -466,7 +486,7 @@ async def async_discover_port(hass, host: str, timeout: float = 8.0) -> int | No
         # wired to the same handler in a plain zeroconf.ServiceBrowser).
         if state_change not in (ServiceStateChange.Added, ServiceStateChange.Updated):
             return
-        hass.async_create_task(_resolve(zc, service_type, name))
+        hass.async_create_task(_resolve(zeroconf, service_type, name))
 
     browser = AsyncServiceBrowser(aiozc.zeroconf, ZEROCONF_SERVICE_TYPE, handlers=[_on_change])
     try:
@@ -476,4 +496,4 @@ async def async_discover_port(hass, host: str, timeout: float = 8.0) -> int | No
     finally:
         await browser.async_cancel()
 
-    return result.get("port")
+    return result.get("device")
