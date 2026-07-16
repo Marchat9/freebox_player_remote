@@ -21,7 +21,11 @@ This integration was entirely built using [Claude](https://claude.ai) (Anthropic
 
 ### HACS (custom repository)
 
-This repository isn't in the default HACS store, but can be added as a [custom repository](https://www.hacs.xyz/docs/faq/custom_repositories/):
+Click the button to open your Home Assistant instance with this repository pre-filled:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Marchat9&repository=freebox_player_remote&category=integration)
+
+_or add it manually_
 
 1. Open HACS in Home Assistant
 2. Click the three dots menu (top right) > **Custom repositories**
