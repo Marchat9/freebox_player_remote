@@ -1,15 +1,17 @@
-# Freebox Player Remote (Foils HID) for Home Assistant
+# Freebox Player Remote for Home Assistant
 
 [![GitHub release](https://img.shields.io/github/v/release/Marchat9/freebox_player_remote?style=for-the-badge)](https://github.com/Marchat9/freebox_player_remote)
 [![](https://img.shields.io/github/license/Marchat9/freebox_player_remote?style=for-the-badge)](https://github.com/Marchat9/freebox_player_remote/blob/main/LICENSE)
 
-Home Assistant custom integration that fully remote-controls a **Freebox Player** (Revolution / Delta / Crystal / mini4K) over the local network, using Free's own **Foils HID** protocol — the same one used by the official Android remote app.
+Home Assistant custom integration that fully remote-controls a **Freebox Player** over the local network, using Free's own **Foils HID** protocol.
 
 Unlike the HTTP remote-control API (`/pub/remote_control`, blocked by Free with a 403) or the authenticated REST API (volume/play-pause only), this integration exposes the **full remote**: navigation, power, numeric keypad, channel change, media transport controls, and more — 43 keys in total.
 
 ## Disclaimer
 
 This integration relies on Free's Foils HID network protocol, reverse-engineered from the public [dev.freebox.fr](https://dev.freebox.fr) SDK documentation and a third-party reference implementation (see [Credits](#credits)). It is not an official Free product, is not affiliated with or endorsed by Free, and is not published on the default HACS store — it's a personal/local project, installable via HACS only as a custom repository (see [Installation](#installation)).
+
+**Tested hardware:** only on a **_Freebox Player Revolution_**. Delta/Crystal/mini4K Players are believed to use the same Foils HID protocol per Free's SDK documentation, but this has not been verified on real hardware — feedback from owners of these models is welcome.
 
 The protocol has no authentication, and the port it listens on is not fixed (only discoverable via mDNS or manually). The retransmission/keepalive logic in `client.py` is an original implementation built from the documented wire format, not a line-for-line port of any existing project — some edge cases may need adjustment against real hardware.
 
@@ -51,16 +53,18 @@ This repository isn't in the default HACS store, but can be added as a [custom r
 
 1. Go to **Settings > Devices & Services > + Add Integration**
 2. Search for **"Freebox Player Remote"**
-3. Enter the Player's IP address, and optionally its port (see [Parameters](#parameters))
+3. Leave both fields empty to let Home Assistant find the Player automatically via mDNS, or fill in the IP address and/or port manually (see [Parameters](#parameters))
 
 The config flow performs a **real connection test** (an actual RUDP handshake), not just an IP format check, and reports a specific error for each failure case: invalid IP format, unreachable host, connection refused, timeout, or discovery failure.
 
 ### Parameters
 
-| Parameter | Required | Description                                                                                                                                                                                                                                                                                                            |
-| --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Host**  | Yes      | IPv4 address of the Freebox Player, e.g. `192.168.1.10`. Find it in the Freebox OS web UI at `mafreebox.freebox.fr` (_Réglages > Freebox Player_) or in your Freebox's DHCP client list. A **DHCP reservation** for the Player is strongly recommended, otherwise the integration breaks the next time its IP changes. |
-| **Port**  | No       | Foils HID port. Leave empty to let Home Assistant discover it automatically via mDNS (`_hid._udp.local.`). Only fill it in manually if discovery fails (see [Troubleshooting](#troubleshooting)).                                                                                                                      |
+Both fields are optional -- if left empty, Home Assistant discovers the corresponding value automatically via mDNS.
+
+| Parameter | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Host**  | No       | IPv4 address of the Freebox Player, e.g. `192.168.1.10`. Leave empty to auto-discover the Player itself (finds the first Foils HID device on the network). Find it manually in the Freebox OS web UI at `mafreebox.freebox.fr` (_Réglages > Freebox Player_) or in your Freebox's DHCP client list. A **DHCP reservation** for the Player is strongly recommended, otherwise the integration breaks the next time its IP changes. |
+| **Port**  | No       | Foils HID port. Leave empty to let Home Assistant discover it automatically via mDNS (`_hid._udp.local.`). Only fill it in manually if discovery fails (see [Troubleshooting](#troubleshooting)).                                                                                                                                                                                                                                 |
 
 ## Services
 
@@ -99,7 +103,7 @@ Each Freebox Player is added as a separate config entry. If you configure more t
 
 - Home Assistant.
 - A Freebox Player reachable on the same local network as Home Assistant.
-- Optional, for the pre-made dashboard card's colored buttons: the [card-mod](https://github.com/thomasloven/lovelace-card-mod) HACS frontend module.
+- _Optional_, for the pre-made dashboard card's colored buttons: the [card-mod](https://github.com/thomasloven/lovelace-card-mod) HACS frontend module.
 
 ## Troubleshooting
 
@@ -107,7 +111,7 @@ Each Freebox Player is added as a separate config entry. If you configure more t
 - **"The host could not be reached"** — check the IP address and that the Player is on the same network as Home Assistant.
 - **"The connection was actively refused"** — check the port, and that the Player's network remote-control feature is enabled.
 - **"No response from the Freebox Player within the timeout"** — check that the Player is powered on and that the IP/port are correct.
-- **"No port was given and automatic discovery did not find one"**:
+- **"No host/port was given and automatic discovery did not find one"**:
     - If Home Assistant runs in Docker **without** `network_mode: host`, mDNS multicast usually can't reach the container — this is a networking limitation, not a bug in the integration.
     - `freebox_udp_finder.py` (project root) is a standalone diagnostic script you can run from any machine on the same LAN (not from Home Assistant) to check whether the Player advertises the `_hid._udp.local.` service at all, and on which port:
 
@@ -127,10 +131,6 @@ Each Freebox Player is added as a separate config entry. If you configure more t
             custom_components.freebox_player_remote: debug
     ```
 
-## Branding
-
-- `logo.png` is a cropped render (top portion only, no "freebox" wordmark) of an AI-generated image provided by the project owner, used for the config flow's help illustration.
-
 ## Credits
 
 - Protocol documentation: [dev.freebox.fr](https://dev.freebox.fr) — librudp ([SDK doc](https://dev.freebox.fr/sdk/librudp/), [source](https://github.com/fbx/librudp)) and [Foils HID SDK doc](https://dev.freebox.fr/sdk/foils_hid/).
@@ -139,4 +139,4 @@ Each Freebox Player is added as a separate config entry. If you configure more t
 
 ## License
 
-MIT — see `LICENSE`.
+MIT — see [LICENSE](https://github.com/Marchat9/freebox_player_remote/blob/main/LICENSE) .

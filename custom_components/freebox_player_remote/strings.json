@@ -4,15 +4,27 @@
         "step": {
             "user": {
                 "title": "Connect to your Freebox Player",
-                "description": "This integration fully remote-controls a Freebox Player (Revolution/Delta/Crystal/mini4K) over the network, using Free's own Foils HID protocol -- the same one used by the official Android remote app. Unlike the HTTP remote-control API, it also covers navigation, power, colors, the numeric keypad and channel change.\n\n![Freebox Player Revolution remote layout](/freebox_player_remote/logo.png)\n\nFind the Player's IP address in the Freebox OS web interface (mafreebox.freebox.fr) under Réglages > Freebox Player, or in your router/DHCP client list. **We strongly recommend setting a DHCP reservation for the Player on your Freebox** so its IP never changes -- otherwise this integration will stop working the next time the Player gets a new address.",
+                "description": "Controls a Freebox Player via Home Assistant -- every remote key: navigation, power, numeric keypad, channels, and more.\n\nLeave both fields empty to auto-discover the Player via mDNS.\n\n**Tip:** give the Player a fixed IP address in your Freebox settings, so you don't have to redo this setup if it changes.\n\n_Discovery not working? The [Troubleshooting section](https://github.com/Marchat9/freebox_player_remote#troubleshooting) of the README explains how to run the `freebox_udp_finder.py` script (included in this repo) to find the IP/port manually from any machine on your network._",
                 "data": {
-                    "host": "Player IP address",
+                    "host": "IP address (optional)",
                     "port": "Port (optional)"
                 },
                 "data_description": {
-                    "host": "IPv4 address of the Freebox Player on your local network, e.g. 192.168.1.10.",
-                    "port": "Leave empty to let Home Assistant discover the Foils HID port automatically via mDNS. Only fill this in if automatic discovery fails; you can find it with a tool like 'avahi-browse -r _hid._udp' on your network."
+                    "host": "Leave empty to auto-discover. Example: 192.168.1.10",
+                    "port": "Leave empty to auto-discover. Example: 24322"
                 }
+            },
+            "confirm_auto": {
+                "title": "Freebox Player found",
+                "description": "🎉 Found a Freebox Player automatically: `{host}`, port `{port}`.\n\nClick **Submit** to finalize the configuration."
+            },
+            "confirm_port_auto": {
+                "title": "Port found",
+                "description": "✅ Found the Foils HID port automatically: `{port}` for `{host}`.\n\nClick **Submit** to finalize the configuration."
+            },
+            "confirm_manual": {
+                "title": "Connection successful",
+                "description": "✅ Successfully connected to `{host}:{port}`.\n\nClick **Submit** to finalize the configuration."
             }
         },
         "error": {
@@ -20,7 +32,7 @@
             "cannot_connect": "The host could not be reached (network unreachable / no route to host). Check the IP address and that the Player is on the same network as Home Assistant.",
             "connection_refused": "The connection was actively refused by the host. Check the port, and that the Player's network remote-control feature is enabled.",
             "timeout_connect": "No response from the Freebox Player within the timeout. Check that it is powered on, and that the IP/port are correct.",
-            "discovery_failed": "No port was given and automatic discovery (mDNS) did not find the Foils HID service. Enter the port manually.",
+            "discovery_failed": "The host and/or port were left empty and automatic discovery (mDNS) did not find any Foils HID device. Enter them manually.",
             "unknown": "Unexpected error while testing the connection. Check the Home Assistant logs for details."
         },
         "abort": {
