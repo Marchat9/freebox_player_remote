@@ -59,6 +59,17 @@ press:
             - Context Menu
             - System Sleep
             - System Wakeup
+            - Launch TV app
+            - Launch Replay app
+            - Launch Videoclub app
+            - Show TV guide
+            - Show TV records
+            - Launch file browser
+            - Launch YouTube app
+            - Launch Radios app
+            - Launch Canal VOD app
+            - Toggle PiP on TV
+            - Launch Netflix app
     entry_id:
       name: Config entry ID
       description: >-

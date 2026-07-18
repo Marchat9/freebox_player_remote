@@ -110,6 +110,21 @@ FBX_REMOTE_KEYS = {
     "Context Menu":     (TARGET_DESKTOP, 0x08, 8),
     "System Sleep":     (TARGET_DESKTOP, 0x02, 8),
     "System Wakeup":    (TARGET_DESKTOP, 0x04, 8),
+
+    # Vendor-specific app-launch shortcuts (Consumer page 0xc), added to the
+    # Freebox Player HID codes by Free in 2020 (see dev.freebox.fr bug
+    # FS#30276) and present on the Player Devialet's touchscreen remote.
+    "Launch TV app":         (TARGET_CONSUMER, 0xf01, 16),
+    "Launch Replay app":     (TARGET_CONSUMER, 0xf02, 16),
+    "Launch Videoclub app":  (TARGET_CONSUMER, 0xf03, 16),
+    "Show TV guide":         (TARGET_CONSUMER, 0xf04, 16),
+    "Show TV records":       (TARGET_CONSUMER, 0xf05, 16),
+    "Launch file browser":   (TARGET_CONSUMER, 0xf06, 16),
+    "Launch YouTube app":    (TARGET_CONSUMER, 0xf07, 16),
+    "Launch Radios app":     (TARGET_CONSUMER, 0xf08, 16),
+    "Launch Canal VOD app":  (TARGET_CONSUMER, 0xf09, 16),
+    "Toggle PiP on TV":      (TARGET_CONSUMER, 0xf0a, 16),
+    "Launch Netflix app":    (TARGET_CONSUMER, 0xf0b, 16),
 }
 
 SERVICE_PRESS = "press"

@@ -5,7 +5,7 @@
 
 Home Assistant custom integration that fully remote-controls a **Freebox Player** over the local network, using Free's own **Foils HID** protocol.
 
-Unlike the HTTP remote-control API (`/pub/remote_control`, blocked by Free with a 403) or the authenticated REST API (volume/play-pause only), this integration exposes the **full remote**: navigation, power, numeric keypad, channel change, media transport controls, and more — 43 keys in total.
+Unlike the HTTP remote-control API (`/pub/remote_control`, blocked by Free with a 403) or the authenticated REST API (volume/play-pause only), this integration exposes the **full remote**: navigation, power, numeric keypad, channel change, media transport controls, app-launch shortcuts (Netflix, YouTube, Canal VOD...), and more — 54 keys in total.
 
 ## Disclaimer
 
@@ -16,6 +16,40 @@ This integration relies on Free's Foils HID network protocol, reverse-engineered
 The protocol has no authentication, and the port it listens on is not fixed (only discoverable via mDNS or manually). The retransmission/keepalive logic in `client.py` is an original implementation built from the documented wire format, not a line-for-line port of any existing project — some edge cases may need adjustment against real hardware.
 
 This integration was entirely built using [Claude](https://claude.ai) (Anthropic) — every line of code, from the protocol client to the config flow, was written by Claude.
+
+## Compatibility
+
+Only Players that speak the **Foils HID** network protocol can be controlled by this integration. Newer Players with a Bluetooth remote use a completely different mechanism and are out of scope.
+
+| Player model                                     | Protocol                    | Status           | Notes                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------ | --------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Revolution**                                   | Foils HID (network)         | ✅ Tested        | Full remote confirmed working, except `System Sleep` / `System Wakeup` and all 11 app-launch keys (`Launch Netflix app` etc.): the codes are accepted (no error) but have no observable effect on real hardware — the Revolution's remote/firmware doesn't have these buttons/apps, so this isn't too surprising.                                                      |
+| **Delta / Crystal / mini4K**                     | Foils HID (network)         | ⚠️ Untested      | Same protocol per Free's SDK docs, believed to work identically — not yet verified on real hardware. Feedback welcome.                                                                                                                                                                                                                                                 |
+| **Devialet** (Player bundled with Freebox Delta) | Foils HID (network), likely | ⚠️ Untested      | Free's own "Freebox Connect" app controls Revolution and Devialet the same way over local Wi-Fi, which suggests the Player itself runs the same Foils HID service regardless of which physical remote ships with it. Not confirmed against real hardware with this integration — try it (same config flow, just point it at the Devialet Player's IP) and report back. |
+| **Pop / Ultra**                                  | Bluetooth LE remote         | ❌ Not supported | Free explicitly documents Pop/Ultra as needing a different, third-party app mechanism — not the same network remote. Use Home Assistant's native [`androidtv`](https://www.home-assistant.io/integrations/androidtv/) (ADB) integration instead.                                                                                                                       |
+
+### App-launch shortcuts
+
+11 vendor-specific app-launch codes, documented on the current (unversioned) [dev.freebox.fr codes page](https://dev.freebox.fr/sdk/freebox_player_codes.html) — added by Free in 2020 ([FS#30276](https://dev.freebox.fr/bugs/task/30276)), absent from every earlier versioned page (1.1.1/1.1.2/1.1.4).
+All 11 are included in `FBX_REMOTE_KEYS`.
+
+| Key                    | Status                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| `Launch Netflix app`   | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch YouTube app`   | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch Canal VOD app` | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch TV app`        | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch Replay app`    | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch Videoclub app` | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Show TV guide`        | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Show TV records`      | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch file browser`  | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Launch Radios app`    | ❌ No effect on Revolution — untested on Delta/Devialet |
+| `Toggle PiP on TV`     | ❌ No effect on Revolution — untested on Delta/Devialet |
+
+The codes are accepted without error but have no observable effect on the Revolution — its remote/firmware doesn't have these buttons/apps, so this isn't too surprising. Feedback from Delta/Devialet owners welcome.
+
+No code exists for **Prime Video** (feature request explicitly rejected by Free, [FS#30484](https://dev.freebox.fr/bugs/task/30484) — use home-screen favorites instead) or **Disney+** (undocumented anywhere in the SDK; only on the Pop's Bluetooth remote, out of scope here).
 
 ## Installation
 
@@ -82,14 +116,14 @@ data:
 
 | Field        | Required | Description                                                                                                                                                                                              |
 | ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **key**      | Yes      | Dropdown selector listing all 43 supported remote keys (see `custom_components/freebox_player_remote/const.py`, `FBX_REMOTE_KEYS`), navigable in **Developer Tools > Actions** — no raw strings to type. |
+| **key**      | Yes      | Dropdown selector listing all 54 supported remote keys (see `custom_components/freebox_player_remote/const.py`, `FBX_REMOTE_KEYS`), navigable in **Developer Tools > Actions** — no raw strings to type. |
 | **entry_id** | No       | Targets a specific Player if you have more than one configured (see [Multiple Players](#multiple-players)).                                                                                              |
 
 Note: no color-button keys (red/green/yellow/blue) are available — no HID code for them is documented in the Foils HID protocol.
 
 ## Pre-made Lovelace card
 
-`lovelace_freebox_remote_card.yaml` (project root) is a ready-to-paste dashboard card covering 40 of the 43 keys (all except `AV`, `Context Menu`, and the combined `Play/Pause` key — separate `Play`/`Pause` buttons are included instead), laid out like a physical remote: power/sleep/wake, a merged navigation+menu pad, volume/channel, numeric keypad, and playback controls.
+`lovelace_freebox_remote_card.yaml` (project root) is a ready-to-paste dashboard card covering 51 of the 54 keys (all except `AV`, `Context Menu`, and the combined `Play/Pause` key — separate `Play`/`Pause` buttons are included instead), laid out like a physical remote: power/sleep/wake, a merged navigation+menu pad, volume/channel, numeric keypad, playback controls, and an "Applications" section for the app-launch shortcuts.
 
 To install it:
 
