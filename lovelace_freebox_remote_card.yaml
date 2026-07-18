@@ -464,3 +464,111 @@ cards:
                 }
           - type: markdown
             content: ' '
+
+    - type: markdown
+      content: "### Applications"
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+          - type: button
+            name: Netflix
+            icon: mdi:netflix
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch Netflix app' },
+                }
+          - type: button
+            name: YouTube
+            icon: mdi:youtube
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch YouTube app' },
+                }
+          - type: button
+            name: Canal VOD
+            icon: mdi:movie-open-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch Canal VOD app' },
+                }
+          - type: button
+            name: TV
+            icon: mdi:television-classic
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch TV app' },
+                }
+          - type: button
+            name: Replay
+            icon: mdi:television-play
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch Replay app' },
+                }
+          - type: button
+            name: Videoclub
+            icon: mdi:movie-star-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch Videoclub app' },
+                }
+          - type: button
+            name: Guide TV
+            icon: mdi:view-list-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Show TV guide' },
+                }
+          - type: button
+            name: Enregistrements
+            icon: mdi:record-circle-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Show TV records' },
+                }
+          - type: button
+            name: Radios
+            icon: mdi:radio
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch Radios app' },
+                }
+          - type: button
+            name: Fichiers
+            icon: mdi:folder-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Launch file browser' },
+                }
+          - type: button
+            name: PiP
+            icon: mdi:picture-in-picture-bottom-right-outline
+            tap_action:
+                {
+                    action: perform-action,
+                    perform_action: freebox_player_remote.press,
+                    data: { key: 'Toggle PiP on TV' },
+                }
+          - type: markdown
+            content: ' '
