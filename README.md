@@ -11,7 +11,7 @@ Unlike the HTTP remote-control API (`/pub/remote_control`, blocked by Free with 
 
 This integration relies on Free's Foils HID network protocol, reverse-engineered from the public [dev.freebox.fr](https://dev.freebox.fr) SDK documentation and a third-party reference implementation (see [Credits](#credits)). It is not an official Free product, is not affiliated with or endorsed by Free, and is not published on the default HACS store — it's a personal/local project, installable via HACS only as a custom repository (see [Installation](#installation)).
 
-**Tested hardware:** only on a **_Freebox Player Revolution_**. Delta/Crystal/mini4K Players are believed to use the same Foils HID protocol per Free's SDK documentation, but this has not been verified on real hardware — feedback from owners of these models is welcome.
+**Tested hardware:**   Freebox Player: **_Revolution && [Devialet](https://forum.hacf.fr/t/integration-hacs-freebox-player-remote-telecommande-complete-pour-le-freebox-player/82051/8)_**. — feedback from owners of other models is welcome.
 
 The protocol has no authentication, and the port it listens on is not fixed (only discoverable via mDNS or manually). The retransmission/keepalive logic in `client.py` is an original implementation built from the documented wire format, not a line-for-line port of any existing project — some edge cases may need adjustment against real hardware.
 
@@ -21,33 +21,33 @@ This integration was entirely built using [Claude](https://claude.ai) (Anthropic
 
 Only Players that speak the **Foils HID** network protocol can be controlled by this integration. Newer Players with a Bluetooth remote use a completely different mechanism and are out of scope.
 
-| Player model                                     | Protocol                    | Status           | Notes                                                                                                                                                                                                                                                                                                                                                                  |
+| Player model | Protocol  | Status  | Notes |
 | ------------------------------------------------ | --------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Revolution**                                   | Foils HID (network)         | ✅ Tested        | Full remote confirmed working, except `System Sleep` / `System Wakeup` and all 11 app-launch keys (`Launch Netflix app` etc.): the codes are accepted (no error) but have no observable effect on real hardware — the Revolution's remote/firmware doesn't have these buttons/apps, so this isn't too surprising.                                                      |
-| **Delta / Crystal**                     | Foils HID (network)         | ⚠️ Untested      | Same protocol per Free's SDK docs, believed to work identically — not yet verified on real hardware. Feedback welcome.                                                                                                                                                                                                                                                 |
-| **Devialet** (Player bundled with Freebox Delta) | Foils HID (network), likely | ⚠️ Untested      | Free's own "Freebox Connect" app controls Revolution and Devialet the same way over local Wi-Fi, which suggests the Player itself runs the same Foils HID service regardless of which physical remote ships with it. Not confirmed against real hardware with this integration — try it (same config flow, just point it at the Devialet Player's IP) and report back. |
-| **Pop / Ultra / Mini 4k**                                  | Bluetooth LE remote         | ❌ Not supported | Free explicitly documents Pop/Ultra as needing a different, third-party app mechanism — not the same network remote. Use Home Assistant's native [`androidtv`](https://www.home-assistant.io/integrations/androidtv/) (ADB) integration instead.                                                                                                                       |
+| **Revolution**  | Foils HID (network)  | ✅ Tested | Full remote confirmed working, except `System Sleep` / `System Wakeup` and all 11 app-launch keys (`Launch Netflix app` etc.): the codes are accepted (no error) but have no observable effect on real hardware — the Revolution's remote/firmware doesn't have these buttons/apps, so this isn't too surprising. |
+| **Devialet** | Foils HID (network)  | ✅ Tested | [Confirmed working by a user](https://forum.hacf.fr/t/integration-hacs-freebox-player-remote-telecommande-complete-pour-le-freebox-player/82051/8). Some playback buttons and VOD service shortcuts aren't handled by the player (codes accepted but no observable effect) — the rest of the remote works normally. |
+| **Crystal** | Foils HID (network) | ⚠️ Untested | Same protocol per Free's SDK docs, believed to work identically — not yet verified on real hardware. Feedback welcome. |
+| **Pop / Ultra / Mini 4k** | Bluetooth LE remote  | ❌ Not supported | Free explicitly documents Pop/Ultra as needing a different, third-party app mechanism — not the same network remote. Use Home Assistant's native [`androidtv`](https://www.home-assistant.io/integrations/androidtv/) (ADB) integration instead. |
 
 ### App-launch shortcuts
 
 11 vendor-specific app-launch codes, documented on the current (unversioned) [dev.freebox.fr codes page](https://dev.freebox.fr/sdk/freebox_player_codes.html) — added by Free in 2020 ([FS#30276](https://dev.freebox.fr/bugs/task/30276)), absent from every earlier versioned page (1.1.1/1.1.2/1.1.4).
 All 11 are included in `FBX_REMOTE_KEYS`.
 
-| Key                    | Status                                                  |
-| ---------------------- | ------------------------------------------------------- |
-| `Launch Netflix app`   | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch YouTube app`   | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch Canal VOD app` | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch TV app`        | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch Replay app`    | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch Videoclub app` | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Show TV guide`        | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Show TV records`      | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch file browser`  | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Launch Radios app`    | ❌ No effect on Revolution — untested on Delta/Devialet |
-| `Toggle PiP on TV`     | ❌ No effect on Revolution — untested on Delta/Devialet |
+| Key                    | Status                                                              |
+| ---------------------- | ------------------------------------------------------------------- |
+| `Launch Netflix app`   | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch YouTube app`   | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch Canal VOD app` | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch TV app`        | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch Replay app`    | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch Videoclub app` | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Show TV guide`        | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Show TV records`      | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch file browser`  | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Launch Radios app`    | ❌ No effect on Revolution nor Devialet — may work on other players |
+| `Toggle PiP on TV`     | ❌ No effect on Revolution nor Devialet — may work on other players |
 
-The codes are accepted without error but have no observable effect on the Revolution — its remote/firmware doesn't have these buttons/apps, so this isn't too surprising. Feedback from Delta/Devialet owners welcome.
+The codes are accepted without error but have no observable effect on the Revolution nor Devialet — its remote/firmware doesn't have these buttons/apps, so this isn't too surprising. Feedback from other Freebox player owners welcome.
 
 No code exists for **Prime Video** (feature request explicitly rejected by Free, [FS#30484](https://dev.freebox.fr/bugs/task/30484) — use home-screen favorites instead) or **Disney+** (undocumented anywhere in the SDK; only on the Pop's Bluetooth remote, out of scope here).
 
